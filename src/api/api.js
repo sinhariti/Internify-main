@@ -86,4 +86,13 @@ export const api = {
     headers: getAuthHeaders(),
     body: JSON.stringify({ applicationId: appId, question, userAnswer }),
   }),
+  processGradesheet: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return fetch('https://gpa-horizon-e194652d5a29.herokuapp.com/process-gradesheet/', {
+      method: 'POST',
+      body: formData,
+    });
+  },
 };

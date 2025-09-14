@@ -4,18 +4,41 @@ import 'react-toastify/dist/ReactToastify.css';
 import Auth from '../components/Auth';
 import Dashboard from '../components/Dashboard';
 import { api } from '../api/api';
+import { HashLoader } from 'react-spinners';
 
-export const Loader = () => (
-  <div className="fixed top-6 right-6 z-50 flex items-center justify-center">
-    <div className="flex flex-col items-center bg-white bg-opacity-90 rounded-xl shadow-lg px-6 py-4 border border-blue-100">
-      <svg className="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      <span className="text-blue-700 font-semibold text-base">Loading...</span>
+// export const Loader = () => (
+//   <div className="fixed top-6 right-6 z-50 flex items-center justify-center">
+//     <div className="flex flex-col items-center bg-white bg-opacity-90 rounded-xl shadow-lg px-6 py-4 border border-blue-100">
+//       <svg className="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+//         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+//         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+//       </svg>
+//       <span className="text-blue-700 font-semibold text-base">Loading...</span>
+//     </div>
+//   </div>
+// );
+
+export const Loader = ({
+  text = "Loading...",
+  size = 60,
+  color = "#6366F1", // Default color from your app's theme
+  loading = true,
+  speedMultiplier = 1,
+}) => {
+  return (
+    <div className="fixed inset-0 backdrop-blur-xs flex flex-col items-center justify-center z-50 gap-6">
+      <HashLoader
+        color={color}
+        loading={loading}
+        size={size}
+        speedMultiplier={speedMultiplier}
+        aria-label="Loading Spinner"
+        data-testid="loader"
+      />
+      <span className="text-white font-semibold text-lg">{text}</span>
     </div>
-  </div>
-);
+  );
+};
 
 const Internify = ({ initialView }) => {
   const [user, setUser] = useState(null);

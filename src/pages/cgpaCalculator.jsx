@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import SideNav from '@/components/SideNav';
+import { api } from '@/api/api';
+import { Loader } from '@/pages/Internify';
 
 const parseCsv = (text) => {
 	const lines = String(text)
@@ -56,38 +58,111 @@ const CgpaCalculator = () => {
 	});
 	const [fileName, setFileName] = useState('');
 	const [parsed, setParsed] = useState([]);
+	const [selectedFile, setSelectedFile] = useState(null);
 	const [cgpa, setCgpa] = useState(null);
 	const [error, setError] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	const handleLogout = () => {
 		localStorage.clear();
 		window.location.href = '/login';
 	};
 
-	const onFileChange = (e) => {
+		const normalizeApiPayload = (payload) => {
+			// Attempt to map various possible shapes to [{ credits, grade | grade_point }]
+			const candidates = [
+				payload?.results,
+				payload?.data,
+				payload?.subjects,
+				Array.isArray(payload) ? payload : null,
+			].find((x) => Array.isArray(x));
+			if (!candidates) return [];
+
+			return candidates
+				.map((it) => {
+					const credits = it.credits ?? it.credit ?? it.cr ?? it.Credits ?? 0;
+					const grade = it.grade ?? it.letter ?? it.Grade ?? it.GRADE ?? it.result ?? undefined;
+					const grade_point = it.grade_point ?? it.gp ?? it.points ?? it.Points ?? undefined;
+					return { credits: Number(credits) || 0, grade, grade_point };
+				})
+				.filter((r) => r.credits > 0);
+		};
+
+		const computeCgpaFromRows = (rows) => {
+			let totalCredits = 0;
+			let totalPoints = 0;
+			for (const r of rows) {
+				const gp = r.grade_point != null ? Number(r.grade_point) : gradeToPoints(r.grade);
+				totalCredits += r.credits;
+				totalPoints += gp * r.credits;
+			}
+			return totalCredits > 0 ? totalPoints / totalCredits : null;
+		};
+
+	const onFileChange = async (e) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 		setError('');
 		setFileName(file.name);
-		if (!/\.(csv|txt)$/i.test(file.name)) {
-			setError('Please upload a CSV or TXT file with: course, credits, grade');
-			setParsed([]);
-			return;
+
+		// Just store the selected file. For PDFs, we'll process on Calculate.
+		setSelectedFile(file);
+
+		// CSV/TXT -> parse now so Calculate can compute locally
+		if (/\.(csv|txt)$/i.test(file.name)) {
+			const reader = new FileReader();
+			reader.onload = () => {
+				try {
+					const rows = parseCsv(String(reader.result || ''));
+					setParsed(rows);
+					setCgpa(null);
+				} catch {
+					setError('Could not parse file. Ensure it is a comma-separated list with credits and grade.');
+				}
+			};
+			reader.readAsText(file);
 		}
-		const reader = new FileReader();
-		reader.onload = () => {
-			try {
-				const rows = parseCsv(String(reader.result || ''));
-				setParsed(rows);
-				setCgpa(null);
-			} catch {
-				setError('Could not parse file. Ensure it is a comma-separated list with credits and grade.');
-			}
-		};
-		reader.readAsText(file);
+
 	};
 
-	const calculate = () => {
+	const calculate = async () => {
+		setError('');
+		// If a PDF is selected, call backend now
+		if (selectedFile && (/\.pdf$/i.test(selectedFile.name) || selectedFile.type === 'application/pdf')) {
+			try {
+				setLoading(true);
+				const res = await api.processGradesheet(selectedFile);
+				const text = await res.text();
+				let payload = null;
+				try { payload = JSON.parse(text); } catch { payload = null; }
+
+				if (!res.ok) {
+					throw new Error(`API error ${res.status}: ${text || 'Failed to process PDF'}`);
+				}
+				if (!payload) throw new Error('Invalid response from server.');
+
+				const calculated =
+					typeof payload.calculated_cgpa === 'number' ? payload.calculated_cgpa :
+					typeof payload.cgpa === 'number' ? payload.cgpa : undefined;
+
+				console.log('calculated_cgpa:', calculated);
+
+				if (typeof calculated !== 'number') {
+					throw new Error('Calculated CGPA not found in response.');
+				}
+				setParsed([]);
+				setCgpa(calculated);
+			} catch (err) {
+				setParsed([]);
+				setCgpa(null);
+				setError(err?.message || 'Failed to process PDF gradesheet.');
+			} finally {
+				setLoading(false);
+			}
+			return;
+		}
+
+		// Otherwise compute from parsed CSV/TXT rows
 		if (!parsed.length) {
 			setError('No valid rows found to calculate.');
 			return;
@@ -109,6 +184,7 @@ const CgpaCalculator = () => {
 
 	return (
 		<div className="min-h-screen bg-gray-50">
+			{loading && <Loader />}
 			<SideNav user={user} handleLogout={handleLogout} />
 			<Header user={user} handleLogout={handleLogout} />
 
@@ -124,37 +200,41 @@ const CgpaCalculator = () => {
 						<h2 className="text-3xl font-bold text-gray-900">Upload Transcript</h2>
 					</div>
 
-					<div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 flex items-center justify-between">
+								<div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 flex items-center justify-between">
 						<div className="flex items-center space-x-3 text-gray-600">
 							<div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center">📥</div>
 							<div>
 								<p className="font-medium">Drag and drop file here</p>
-								<p className="text-sm text-gray-500">CSV or TXT • columns: Course, Credits, Grade</p>
+											<p className="text-sm text-gray-500">CSV/TXT (Course, Credits, Grade) or PDF Gradesheet</p>
 								{fileName && <p className="text-sm text-gray-700 mt-1">Selected: {fileName}</p>}
 							</div>
 						</div>
 						<label className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-800 hover:bg-gray-100 cursor-pointer">
 							Browse files
-							<input type="file" accept=".csv,.txt" className="hidden" onChange={onFileChange} />
+										<input type="file" accept=".csv,.txt,.pdf" className="hidden" onChange={onFileChange} />
 						</label>
 					</div>
 
 					{error && <p className="mt-4 text-red-600 text-sm">{error}</p>}
+
+                    {cgpa != null && (
+						<div className="mt-8 p-4 rounded-xl bg-green-50 border border-green-200">
+                            {cgpa>0 ? <p className="text-green-800 font-semibold">Calculated CGPA: <span className="text-2xl">{cgpa.toFixed(2)}</span></p> : <p className="text-red-800 font-semibold">Upload correct file</p>}
+						</div>
+					)}
 
 					<div className="mt-6 text-sm text-gray-500">
 						<p className="font-medium">Example CSV</p>
 						<pre className="mt-2 bg-gray-50 p-3 rounded-md border border-gray-200 overflow-auto">{`Course,Credits,Grade\nMath 101,4,A\nPhysics,3,B+\nChemistry,3,8`}</pre>
 					</div>
 
-					<div className="mt-8 flex flex-col sm:flex-row gap-4">
-						<button onClick={calculate} className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">Calculate CGPA</button>
-					</div>
+								<div className="mt-8 flex flex-col sm:flex-row gap-4">
+									<button onClick={calculate} disabled={loading} className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60">
+										{loading ? 'Processing...' : 'Calculate CGPA'}
+									</button>
+								</div>
 
-					{cgpa != null && (
-						<div className="mt-8 p-4 rounded-xl bg-green-50 border border-green-200">
-							<p className="text-green-800 font-semibold">Estimated CGPA: <span className="text-2xl">{cgpa.toFixed(2)}</span></p>
-						</div>
-					)}
+					
 				</div>
 			</div>
 		</div>
