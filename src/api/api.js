@@ -86,4 +86,14 @@ export const api = {
     headers: getAuthHeaders(),
     body: JSON.stringify({ applicationId: appId, question, userAnswer }),
   }),
+
+  // Profile Management
+  fetchProfile: () => fetch(`${VITE_API_BASE_URL}/profile`, {
+    headers: getAuthHeaders(),
+  }),
+  updateProfile: (profileData) => fetch(`${VITE_API_BASE_URL}/profile`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(profileData),
+  }),
 };

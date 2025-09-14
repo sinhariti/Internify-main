@@ -2,19 +2,48 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Home, FileText, FileScan, Sigma, HelpCircle, LogOut, User } from 'lucide-react';
 
-const SideNav = ({ user, handleLogout }) => {
+const SideNav = ({ user, handleLogout, handleNavigation }) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const navigate = useNavigate();
 
   const navigationItems = [
-    { icon: Home, label: 'Dashboard', action: () => navigate('/login') },
-    { icon: FileText, label: 'Applications', action: () => console.log('Applications clicked') },
-    // { icon: BarChart3, label: 'Analytics', action: () => console.log('Analytics clicked') },
-    { icon: FileScan, label: 'Ats Analyser', action: () => navigate('/ats-analyser') },
-    { icon: Sigma, label: 'Cgpa Calculator', action: () => navigate('/cgpa-calculator') },
-    { icon: User, label: 'Profile', action: () => console.log('Profile clicked') },
+    { icon: Home, label: 'Dashboard', action: () => {
+      if (handleNavigation) {
+        handleNavigation('dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+      setIsNavOpen(false);
+    }},
+    { icon: FileText, label: 'Applications', action: () => {
+      if (handleNavigation) {
+        handleNavigation('dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+      setIsNavOpen(false);
+    }},
+    { icon: FileScan, label: 'Ats Analyser', action: () => {
+      navigate('/ats-analyser');
+      setIsNavOpen(false);
+    }},
+    { icon: Sigma, label: 'Cgpa Calculator', action: () => {
+      navigate('/cgpa-calculator');
+      setIsNavOpen(false);
+    }},
+    { icon: User, label: 'Profile', action: () => {
+      if (handleNavigation) {
+        handleNavigation('profile');
+      } else {
+        navigate('/profile');
+      }
+      setIsNavOpen(false);
+    }},
     { icon: HelpCircle, label: 'Help & Support', action: () => console.log('Help clicked') },
-    { icon: LogOut, label: 'Logout', action: handleLogout },
+    { icon: LogOut, label: 'Logout', action: () => {
+      handleLogout();
+      setIsNavOpen(false);
+    }},
   ];
 
   return (

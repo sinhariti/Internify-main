@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Briefcase, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { api } from '../api/api';
 
 const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loading, setLoading }) => {
+  const navigate = useNavigate();
   const [authForm, setAuthForm] = useState({
     email: '',
     password: '',
@@ -141,13 +143,13 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
           <div className="text-center mb-8">
             <div 
               className="bg-gradient-to-r from-blue-600 to-purple-600 w-16 h-16 rounded-xl mx-auto mb-4 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate('/')}
             >
               <Briefcase className="w-8 h-8 text-white" />
             </div>
             <h1 
               className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform duration-200"
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate('/')}
             >
               Internify
             </h1>
@@ -253,7 +255,9 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
             <div className="text-center">
               <button
                 onClick={() => {
-                  setCurrentView(currentView === 'login' ? 'signup' : 'login');
+                  const newView = currentView === 'login' ? 'signup' : 'login';
+                  setCurrentView(newView);
+                  navigate(newView === 'login' ? '/login' : '/signup');
                   setIsOtpSent(false);
                   setAuthForm({
                     email: '',

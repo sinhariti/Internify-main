@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Auth from '../components/Auth';
@@ -18,6 +19,8 @@ export const Loader = () => (
 );
 
 const Internify = ({ initialView }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [currentView, setCurrentView] = useState(initialView || 'login');
   const [applications, setApplications] = useState([]);
@@ -48,15 +51,34 @@ const Internify = ({ initialView }) => {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setCurrentView('dashboard');
+      
+      // If user is logged in and on login/signup pages, redirect to dashboard
+      if (location.pathname === '/login' || location.pathname === '/signup') {
+        navigate('/dashboard', { replace: true });
+        setCurrentView('dashboard');
+      } else {
+        // Set view based on current route
+        const routeToView = {
+          '/dashboard': 'dashboard',
+          '/profile': 'profile'
+        };
+        setCurrentView(routeToView[location.pathname] || 'dashboard');
+      }
+    } else {
+      // No user, ensure we're on login or signup
+      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+        navigate('/login', { replace: true });
+        setCurrentView('login');
+      }
     }
-  }, []);
+  }, [location.pathname, navigate]);
 
   const onAuthSuccess = (data, isLogin) => {
     const userData = { ...data, token: data.token };
     setUser(userData);
     localStorage.setItem('internify-user', JSON.stringify(userData));
     setCurrentView('dashboard');
+    navigate('/dashboard', { replace: true });
     setTimeout(() => {
       toast.success(isLogin ? 'Login successful!' : 'Signup successful!');
     }, 100);
@@ -229,12 +251,22 @@ const Internify = ({ initialView }) => {
     localStorage.clear();
     setUser(null);
     setCurrentView('login');
+    navigate('/login', { replace: true });
     setApplications([]);
     setAnalytics(null);
     setNotes({});
     setTimeout(() => {
       toast.info('Logged out successfully!');
     }, 200);
+  };
+
+  const handleNavigation = (view) => {
+    setCurrentView(view);
+    if (view === 'profile') {
+      navigate('/profile');
+    } else if (view === 'dashboard') {
+      navigate('/dashboard');
+    }
   };
 
   useEffect(() => {
@@ -256,7 +288,7 @@ const Internify = ({ initialView }) => {
   return (
     <>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
-      {currentView === 'dashboard' ? (
+      {(currentView === 'dashboard' || currentView === 'profile') && user ? (
         <Dashboard
           user={user}
           loading={loading}
@@ -268,6 +300,8 @@ const Internify = ({ initialView }) => {
           filterStatus={filterStatus}
           setFilterStatus={setFilterStatus}
           handleLogout={handleLogout}
+          handleNavigation={handleNavigation}
+          currentView={currentView}
           showAddModal={showAddModal}
           setShowAddModal={setShowAddModal}
           appForm={appForm}
