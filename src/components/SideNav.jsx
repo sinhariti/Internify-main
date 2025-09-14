@@ -39,7 +39,7 @@ const SideNav = ({ user, handleLogout, handleNavigation }) => {
       }
       setIsNavOpen(false);
     }},
-    { icon: HelpCircle, label: 'Help & Support', action: () => console.log('Help clicked') },
+  { icon: HelpCircle, label: 'Help & Support', action: () => { navigate('/help'); setIsNavOpen(false); } },
     { icon: LogOut, label: 'Logout', action: () => {
       handleLogout();
       setIsNavOpen(false);

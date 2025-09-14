@@ -6,6 +6,7 @@ import Internify from './pages/Internify';
 import HomePage from './components/HomePage';
 import AtsAnalyser from './pages/AtsAnalyser';
 import CgpaCalculator from './pages/cgpaCalculator';
+import Help from './pages/Help';
 
 const MainApp = () => (
   <Router>
@@ -17,6 +18,7 @@ const MainApp = () => (
       <Route path="/profile" element={<Internify initialView="profile" />} />
       <Route path="/ats-analyser" element={<AtsAnalyser />} />
       <Route path="/cgpa-calculator" element={<CgpaCalculator />} />
+  <Route path="/help" element={<Help />} />
       {/* All other routes redirect to homepage */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
