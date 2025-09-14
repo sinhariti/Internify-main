@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import InternifyLogin from './components/InternifyLogin';
 import InternifySignup from './components/InternifySignup';
 import HomePage from './components/HomePage';
+import AtsAnalyser from './pages/AtsAnalyser';
+import CgpaCalculator from './pages/cgpaCalculator';
 
 const MainApp = () => (
   <Router>
@@ -12,6 +14,8 @@ const MainApp = () => (
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<InternifyLogin />} />
       <Route path="/signup" element={<InternifySignup />} />
+      <Route path="/ats-analyser" element={<AtsAnalyser />} />
+  <Route path="/cgpa-calculator" element={<CgpaCalculator />} />
       {/* All other routes redirect to homepage */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
