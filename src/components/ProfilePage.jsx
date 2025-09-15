@@ -12,6 +12,7 @@ import {
   Book
 } from 'lucide-react';
 import { api } from '../api/api';
+import { Loader } from '../pages/Internify';
 
 const defaultProfileData = {
   urls: [
@@ -39,6 +40,8 @@ const ProfilePage = ({ user, handleNavigation }) => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [otherUrlType, setOtherUrlType] = useState('');
 
@@ -65,7 +68,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      setLoading(true);
+      setInitialLoading(true);
       try {
         const response = await api.fetchProfile();
         if (response.ok) {
@@ -116,7 +119,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
         console.error("Failed to fetch profile:", err);
         toast.error('Failed to load profile data.');
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
     fetchProfileData();
@@ -124,7 +127,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSavingProfile(true);
     try {
       const { name, email, collegeName, degree, branch, ...dynamicData } = profile;
 
@@ -145,7 +148,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
     } catch (err) {
       toast.error('Network error. Failed to save profile.');
     } finally {
-      setLoading(false);
+      setSavingProfile(false);
     }
   };
 
@@ -172,11 +175,18 @@ const ProfilePage = ({ user, handleNavigation }) => {
     }));
   };
 
-  const handleAddLink = (field) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: [...prev[field], { type: otherUrlType || `Other Link ${prev[field].length + 1}`, url: '' }]
-    }));
+  const handleAddLink = (field, type = '') => {
+    if (field === 'resumeLinks' || field === 'achievements') {
+      setProfile(prev => ({
+        ...prev,
+        [field]: [...prev[field], '']
+      }));
+    } else if (field === 'urls') {
+      setProfile(prev => ({
+        ...prev,
+        [field]: [...prev[field], { type: type || 'Other', url: '' }]
+      }));
+    }
     setOtherUrlType('');
   };
 
@@ -194,6 +204,16 @@ const ProfilePage = ({ user, handleNavigation }) => {
         newLinks[index].url = value;
     }
     setProfile(prev => ({ ...prev, [field]: newLinks }));
+  };
+
+  const handlePlaceholderClick = (placeholderText) => {
+    copyToClipboard(placeholderText);
+  };
+
+  const handleInputDoubleClick = (elementId, placeholderText, currentValue, setValue) => {
+    if (!currentValue) {
+      setValue(placeholderText);
+    }
   };
   
   const handleAddWorkExperience = () => {
@@ -239,8 +259,18 @@ const ProfilePage = ({ user, handleNavigation }) => {
     }
   };
 
-  if (loading) {
-    return <div className="p-8 text-center">Loading profile...</div>;
+  if (initialLoading) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="flex flex-col items-center justify-center py-16">
+            <Loader />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2 mt-4">Loading Profile</h2>
+            <p className="text-gray-500">Please wait while we fetch your profile information...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -257,7 +287,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
             </div>
           </div>
           <button
-            onClick={() => setCurrentView('dashboard')}
+            onClick={() => handleNavigation('dashboard')}
             className="text-gray-600 hover:text-blue-600 transition-colors"
           >
             ← Back to Dashboard
@@ -292,7 +322,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                   <label className="text-sm font-medium text-gray-700">College Name</label>
                   <button
                     type="button"
-                    onClick={() => copyToClipboard('Indian Institute of Technology Delhi')}
+                    onClick={() => copyToClipboard(profile.collegeName || 'Indian Institute of Technology Delhi')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                     title="Copy"
                   >
@@ -313,7 +343,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                   <label className="text-sm font-medium text-gray-700">Degree</label>
                   <button
                     type="button"
-                    onClick={() => copyToClipboard('Bachelor of Technology')}
+                    onClick={() => copyToClipboard(profile.degree || 'Bachelor of Technology')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                     title="Copy"
                   >
@@ -334,7 +364,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                   <label className="text-sm font-medium text-gray-700">Branch</label>
                   <button
                     type="button"
-                    onClick={() => copyToClipboard('Computer Science Engineering')}
+                    onClick={() => copyToClipboard(profile.branch || 'Computer Science Engineering')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                     title="Copy"
                   >
@@ -376,7 +406,10 @@ const ProfilePage = ({ user, handleNavigation }) => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(placeholderText)}
+                        onClick={() => {
+                          const currentValue = profile.urls.find(link => link.type === linkType)?.url;
+                          copyToClipboard(currentValue || placeholderText);
+                        }}
                         className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                         title="Copy URL"
                       >
@@ -451,35 +484,51 @@ const ProfilePage = ({ user, handleNavigation }) => {
                 </button>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <h4 className="text-sm font-medium text-gray-700 flex-1">Resume Drive Links</h4>
-                <button
-                  type="button"
-                  onClick={() => handleAddLink('resumeLinks')}
-                  className="flex-shrink-0 flex items-center space-x-2 px-4 py-2 text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Link</span>
-                </button>
-              </div>
-              {profile.resumeLinks.map((link, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <input
-                    type="url"
-                    value={ensureString(link)}
-                    onChange={(e) => handleLinkChange('resumeLinks', index, e.target.value)}
-                    placeholder="https://drive.google.com/..."
-                    className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-700">Resume Drive Links</h4>
                   <button
                     type="button"
-                    onClick={() => handleRemoveLink('resumeLinks', index)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                    onClick={() => handleAddLink('resumeLinks')}
+                    className="flex items-center space-x-2 px-4 py-2 text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
+                    <span>Add Link</span>
                   </button>
                 </div>
-              ))}
+                {profile.resumeLinks.map((link, index) => (
+                  <div key={index} className="flex flex-col space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Resume Link {index + 1}</label>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(link || 'https://drive.google.com/file/d/1ABC123DEF456/view?usp=sharing')}
+                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="url"
+                        value={ensureString(link)}
+                        onChange={(e) => handleLinkChange('resumeLinks', index, e.target.value)}
+                        placeholder="https://drive.google.com/file/d/..."
+                        className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLink('resumeLinks', index)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -520,91 +569,104 @@ const ProfilePage = ({ user, handleNavigation }) => {
             </div>
           </div>
 
-          {/* Work Experience */}
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Work Experience</h2>
             <div className="space-y-6">
               {profile.workExperiences.map((exp, index) => (
-                <div key={index} className="space-y-2 border-b pb-4 last:border-b-0">
+                <div key={index} className="space-y-4 p-4 border border-gray-200 rounded-lg bg-white">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="relative">
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Company Name</label>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(exp.companyName || 'Google Inc.')}
+                          className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={ensureString(exp.companyName)}
                         onChange={(e) => handleWorkExperienceChange(index, 'companyName', e.target.value)}
-                        onDoubleClick={() => handleInputDoubleClick(`work-company-${index}`, 'Google Inc.', exp.companyName, (val) => handleWorkExperienceChange(index, 'companyName', val))}
                         className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
                         placeholder="e.g., Google Inc."
                       />
-                      {!exp.companyName && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('Google Inc.')}
-                          title="Click to copy"
-                        >
-                          e.g., Google Inc.
-                        </div>
-                      )}
                     </div>
-                    <div className="relative">
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Position</label>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(exp.position || 'Software Development Intern')}
+                          className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={ensureString(exp.position)}
                         onChange={(e) => handleWorkExperienceChange(index, 'position', e.target.value)}
-                        onDoubleClick={() => handleInputDoubleClick(`work-position-${index}`, 'Software Development Intern', exp.position, (val) => handleWorkExperienceChange(index, 'position', val))}
                         className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
                         placeholder="e.g., Software Development Intern"
                       />
-                      {!exp.position && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('Software Development Intern')}
-                          title="Click to copy"
-                        >
-                          e.g., Software Development Intern
-                        </div>
-                      )}
                     </div>
-                    <div className="relative">
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Duration</label>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(exp.duration || 'Jun 2023 - Aug 2023')}
+                          className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={ensureString(exp.duration)}
                         onChange={(e) => handleWorkExperienceChange(index, 'duration', e.target.value)}
-                        onDoubleClick={() => handleInputDoubleClick(`work-duration-${index}`, 'Jun 2023 - Aug 2023', exp.duration, (val) => handleWorkExperienceChange(index, 'duration', val))}
                         className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
                         placeholder="e.g., Jun 2023 - Aug 2023"
                       />
-                      {!exp.duration && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('Jun 2023 - Aug 2023')}
-                          title="Click to copy"
-                        >
-                          e.g., Jun 2023 - Aug 2023
-                        </div>
-                      )}
                     </div>
                   </div>
-                  <div className="relative">
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Description</label>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(exp.description || 'Developed and maintained web applications using React and Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions.')}
+                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
                     <textarea
                       rows="3"
                       value={ensureString(exp.description)}
                       onChange={(e) => handleWorkExperienceChange(index, 'description', e.target.value)}
-                      onDoubleClick={() => handleInputDoubleClick(`work-desc-${index}`, 'Developed and maintained web applications using React and Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions.', exp.description, (val) => handleWorkExperienceChange(index, 'description', val))}
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Developed and maintained web applications using React and Node.js..."
                     />
-                    {!exp.description && (
-                      <div 
-                        className="absolute top-3 left-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded p-1 pointer-events-none"
-                        onClick={() => handlePlaceholderClick('Developed and maintained web applications using React and Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions.')}
-                      >
-                        Click to copy
-                      </div>
-                    )}
                   </div>
-                  <button type="button" onClick={() => handleRemoveWorkExperience(index)} className="text-red-600 text-sm">
-                    Remove Experience
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveWorkExperience(index)} 
+                    className="flex items-center space-x-2 text-red-600 hover:text-red-800 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Remove Experience</span>
                   </button>
                 </div>
               ))}
@@ -626,63 +688,79 @@ const ProfilePage = ({ user, handleNavigation }) => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Projects</label>
                 {profile.projects.map((proj, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        value={ensureString(proj.projectName)}
-                        onChange={(e) => {
-                          const newProjects = [...profile.projects];
-                          newProjects[index].projectName = e.target.value;
-                          setProfile(prev => ({ ...prev, projects: newProjects }));
-                        }}
-                        onDoubleClick={() => handleInputDoubleClick(`project-name-${index}`, 'E-commerce Website', proj.projectName, (val) => {
-                          const newProjects = [...profile.projects];
-                          newProjects[index].projectName = val;
-                          setProfile(prev => ({ ...prev, projects: newProjects }));
-                        })}
-                        className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
-                        placeholder="e.g., E-commerce Website"
-                      />
-                      {!proj.projectName && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('E-commerce Website')}
-                          title="Click to copy"
-                        >
-                          e.g., E-commerce Website
+                  <div key={index} className="space-y-2 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium text-gray-700">Project Name</label>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(proj.projectName || 'E-commerce Website')}
+                            className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Copy"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </button>
                         </div>
-                      )}
-                    </div>
-                    <div className="relative flex-1">
-                      <input
-                        type="url"
-                        value={ensureString(proj.projectUrl)}
-                        onChange={(e) => {
-                          const newProjects = [...profile.projects];
-                          newProjects[index].projectUrl = e.target.value;
-                          setProfile(prev => ({ ...prev, projects: newProjects }));
-                        }}
-                        onDoubleClick={() => handleInputDoubleClick(`project-url-${index}`, 'https://github.com/username/ecommerce-project', proj.projectUrl, (val) => {
-                          const newProjects = [...profile.projects];
-                          newProjects[index].projectUrl = val;
-                          setProfile(prev => ({ ...prev, projects: newProjects }));
-                        })}
-                        className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
-                        placeholder="e.g., https://github.com/username/project"
-                      />
-                      {!proj.projectUrl && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('https://github.com/username/ecommerce-project')}
-                          title="Click to copy"
-                        >
-                          e.g., https://github.com/username/project
+                        <input
+                          type="text"
+                          value={ensureString(proj.projectName)}
+                          onChange={(e) => handleProjectChange(index, 'projectName', e.target.value)}
+                          className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
+                          placeholder="e.g., E-commerce Website"
+                        />
+                      </div>
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium text-gray-700">Project URL</label>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(proj.projectUrl || 'https://github.com/username/ecommerce-project')}
+                            className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Copy"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </button>
                         </div>
-                      )}
+                        <input
+                          type="url"
+                          value={ensureString(proj.projectUrl)}
+                          onChange={(e) => handleProjectChange(index, 'projectUrl', e.target.value)}
+                          className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
+                          placeholder="e.g., https://github.com/username/project"
+                        />
+                      </div>
                     </div>
-                    <button type="button" onClick={() => handleRemoveProject(index)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
-                      <Trash2 className="w-5 h-5" />
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Project Description</label>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(proj.description || 'A full-stack e-commerce application built with React, Node.js, and MongoDB. Features include user authentication, shopping cart, payment integration, and admin dashboard.')}
+                          className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                      <textarea
+                        rows="3"
+                        value={ensureString(proj.description)}
+                        onChange={(e) => handleProjectChange(index, 'description', e.target.value)}
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., A full-stack e-commerce application built with React, Node.js, and MongoDB..."
+                      />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveProject(index)} 
+                      className="flex items-center space-x-2 text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Remove Project</span>
                     </button>
                   </div>
                 ))}
@@ -697,10 +775,32 @@ const ProfilePage = ({ user, handleNavigation }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Achievements and Certifications</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">Achievements and Certifications</label>
+                  <button
+                    type="button"
+                    onClick={() => handleAddLink('achievements', 'achievement')}
+                    className="flex items-center space-x-2 px-4 py-2 text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Achievement</span>
+                  </button>
+                </div>
                 {profile.achievements.map((ach, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="relative flex-1">
+                  <div key={index} className="flex flex-col space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">Achievement {index + 1}</label>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(ach || 'AWS Certified Developer Associate')}
+                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <input
                         type="text"
                         value={ensureString(ach)}
@@ -709,37 +809,19 @@ const ProfilePage = ({ user, handleNavigation }) => {
                           newAchievements[index] = e.target.value;
                           setProfile(prev => ({ ...prev, achievements: newAchievements }));
                         }}
-                        onDoubleClick={() => handleInputDoubleClick(`achievement-${index}`, 'AWS Certified Developer Associate', ach, (val) => {
-                          const newAchievements = [...profile.achievements];
-                          newAchievements[index] = val;
-                          setProfile(prev => ({ ...prev, achievements: newAchievements }));
-                        })}
-                        className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
+                        className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="e.g., AWS Certified Developer Associate"
                       />
-                      {!ach && (
-                        <div 
-                          className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
-                          onClick={() => handlePlaceholderClick('AWS Certified Developer Associate')}
-                          title="Click to copy"
-                        >
-                          e.g., AWS Certified Developer Associate
-                        </div>
-                      )}
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveLink('achievements', index)} 
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
-                    <button type="button" onClick={() => handleRemoveLink('achievements', index)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
-                      <Trash2 className="w-5 h-5" />
-                    </button>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => handleAddLink('achievements', 'achievement')}
-                  className="flex items-center space-x-2 px-4 py-2 text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Achievement</span>
-                </button>
               </div>
             </div>
           </div>
@@ -747,10 +829,15 @@ const ProfilePage = ({ user, handleNavigation }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg"
+              disabled={savingProfile}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg flex items-center space-x-3"
             >
-              {loading ? 'Saving...' : 'Save Profile'}
+              {savingProfile && (
+                <div className="scale-75">
+                  <Loader />
+                </div>
+              )}
+              <span>{savingProfile ? 'Saving Profile...' : 'Save Profile'}</span>
             </button>
           </div>
         </form>
