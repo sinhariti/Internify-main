@@ -4,6 +4,7 @@ import Header from './Header';
 import StatsCards from './StatsCards';
 import ApplicationsList from './ApplicationsList';
 import Modals from './Modals';
+import ProfilePage from './ProfilePage';
 import { Loader } from '../pages/Internify';
 import SideNav from './SideNav';
 
@@ -18,6 +19,8 @@ const Dashboard = ({
   filterStatus,
   setFilterStatus,
   handleLogout,
+  handleNavigation,
+  currentView,
   showAddModal,
   setShowAddModal,
   appForm,
@@ -46,28 +49,33 @@ const Dashboard = ({
     <div className="min-h-screen bg-gray-50 relative">
       {(loading || notesLoading) && <Loader />}
       
-  <SideNav user={user} handleLogout={handleLogout} />
+  <SideNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} />
 
       <Header user={user} handleLogout={handleLogout} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ml-0 sm:ml-0">
-        <StatsCards applications={applications} />
-        <ApplicationsList
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterStatus={filterStatus}
-          setFilterStatus={setFilterStatus}
-          setShowAddModal={setShowAddModal}
-          filteredApplications={filteredApplications}
-          setSelectedApp={setSelectedApp}
-          fetchNotes={fetchNotes}
-          uploadResume={uploadResume}
-          editingAppId={editingAppId}
-          setEditingAppId={setEditingAppId}
-          editForm={editForm}
-          setEditForm={setEditForm}
-          saveEdit={saveEdit}
-        />
-      </div>
+      
+      {currentView === 'profile' ? (
+        <ProfilePage user={user} handleNavigation={handleNavigation} />
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ml-0 sm:ml-0">
+          <StatsCards applications={applications} />
+          <ApplicationsList
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            setShowAddModal={setShowAddModal}
+            filteredApplications={filteredApplications}
+            setSelectedApp={setSelectedApp}
+            fetchNotes={fetchNotes}
+            uploadResume={uploadResume}
+            editingAppId={editingAppId}
+            setEditingAppId={setEditingAppId}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            saveEdit={saveEdit}
+          />
+        </div>
+      )}
       <Modals
         showAddModal={showAddModal}
         setShowAddModal={setShowAddModal}

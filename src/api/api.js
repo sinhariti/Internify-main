@@ -96,11 +96,11 @@ export const api = {
     });
   },
 
-  // Profile Management
+ // Profile Management
   fetchProfile: () => fetch(`${VITE_API_BASE_URL}/profile`, {
     headers: getAuthHeaders(),
   }),
-  updateProfile: (profileData) => fetch(`${VITE_API_BASE_URL}/profile`, {
+  createOrUpdateProfile: (profileData) => fetch(`${VITE_API_BASE_URL}/profile`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(profileData),
