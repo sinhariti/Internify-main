@@ -294,7 +294,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                     type="button"
                     onClick={() => copyToClipboard('Indian Institute of Technology Delhi')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                    title="Copy example"
+                    title="Copy"
                   >
                     <Copy className="w-3 h-3" />
                     <span>Copy</span>
@@ -315,10 +315,10 @@ const ProfilePage = ({ user, handleNavigation }) => {
                     type="button"
                     onClick={() => copyToClipboard('Bachelor of Technology')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                    title="Copy example"
+                    title="Copy"
                   >
                     <Copy className="w-3 h-3" />
-                    <span>Copy example</span>
+                    <span>Copy</span>
                   </button>
                 </div>
                 <input
@@ -336,10 +336,10 @@ const ProfilePage = ({ user, handleNavigation }) => {
                     type="button"
                     onClick={() => copyToClipboard('Computer Science Engineering')}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                    title="Copy example"
+                    title="Copy"
                   >
                     <Copy className="w-3 h-3" />
-                    <span>Copy example</span>
+                    <span>Copy</span>
                   </button>
                 </div>
                 <input
@@ -378,10 +378,10 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         type="button"
                         onClick={() => copyToClipboard(placeholderText)}
                         className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                        title="Copy example URL"
+                        title="Copy URL"
                       >
                         <Copy className="w-3 h-3" />
-                        <span>Copy example</span>
+                        <span>Copy</span>
                       </button>
                     </div>
                     <input
@@ -540,7 +540,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('Google Inc.')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., Google Inc.
                         </div>
@@ -559,7 +559,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('Software Development Intern')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., Software Development Intern
                         </div>
@@ -578,7 +578,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('Jun 2023 - Aug 2023')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., Jun 2023 - Aug 2023
                         </div>
@@ -599,7 +599,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         className="absolute top-3 left-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded p-1 pointer-events-none"
                         onClick={() => handlePlaceholderClick('Developed and maintained web applications using React and Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions.')}
                       >
-                        Click to copy example description
+                        Click to copy
                       </div>
                     )}
                   </div>
@@ -648,7 +648,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('E-commerce Website')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., E-commerce Website
                         </div>
@@ -675,7 +675,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('https://github.com/username/ecommerce-project')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., https://github.com/username/project
                         </div>
@@ -721,7 +721,7 @@ const ProfilePage = ({ user, handleNavigation }) => {
                         <div 
                           className="absolute inset-0 flex items-center px-3 text-gray-400 cursor-pointer hover:bg-gray-50 rounded-lg"
                           onClick={() => handlePlaceholderClick('AWS Certified Developer Associate')}
-                          title="Click to copy placeholder"
+                          title="Click to copy"
                         >
                           e.g., AWS Certified Developer Associate
                         </div>
