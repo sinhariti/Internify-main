@@ -3,6 +3,7 @@ import { Briefcase, ArrowRight, BarChart3, FileText, Bell, Users } from "lucide-
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import ShinyText from "./ShinyText";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -22,9 +23,13 @@ const HomePage = () => {
           {/* <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6 animate-fadeIn">
             Internify
           </h1> */}
-          <p className="text-2xl text-gray-700 mb-8 animate-fadeIn max-w-xl">
-            The modern way to track, manage, and win your dream internship. Organize every application, get smart reminders, and visualize your journey—all in one beautiful dashboard.
-          </p>
+          <div className="mb-8 animate-fadeIn max-w-xl">
+            <ShinyText 
+              text="The modern way to track, manage, and win your dream internship. Organize every application, get smart reminders, and visualize your journey—all in one beautiful dashboard."
+              speed={6}
+              className="text-2xl text-gray-700 leading-relaxed"
+            />
+          </div>
           <div className="flex space-x-6 animate-fadeIn">
             <Button
               onClick={() => navigate("/login")}
