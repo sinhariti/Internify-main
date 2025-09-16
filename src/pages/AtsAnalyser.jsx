@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Header from '@/components/Header';
+import CardNav from '@/components/CardNav';
 import SideNav from '@/components/SideNav';
 import { FileScan } from 'lucide-react';
 
@@ -18,12 +18,20 @@ const AtsAnalyser = () => {
 		window.location.href = '/login';
 	};
 
-	return (
-		<div className="min-h-screen bg-gray-50">
-			<SideNav user={user} handleLogout={handleLogout} />
-			<Header user={user} handleLogout={handleLogout} />
+	const handleNavigation = (view) => {
+		if (view === 'dashboard') {
+			window.location.href = '/dashboard';
+		} else if (view === 'profile') {
+			window.location.href = '/profile';
+		}
+	};
 
-			<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+	return (
+		<div className="min-h-screen bg-gray-50">		
+		{/* <SideNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} /> */}
+		<CardNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} />
+
+			<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style={{ paddingTop: '7rem' }}>
 				<h1 className="text-5xl font-extrabold text-gray-900">Smart ATS</h1>
 				<p className="mt-2 text-gray-600">Improve Your Resume ATS</p>
 

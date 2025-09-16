@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '@/components/Header';
+import CardNav from '@/components/CardNav';
 import SideNav from '@/components/SideNav';
 
 const Help = () => {
@@ -15,6 +15,14 @@ const Help = () => {
     window.location.href = '/login';
   };
 
+  const handleNavigation = (view) => {
+    if (view === 'dashboard') {
+      window.location.href = '/dashboard';
+    } else if (view === 'profile') {
+      window.location.href = '/profile';
+    }
+  };
+
   const Section = ({ title, children }) => (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-3">{title}</h2>
@@ -24,12 +32,10 @@ const Help = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SideNav user={user} handleLogout={handleLogout} />
-      <div className="sticky top-0 z-30 bg-white">
-        <Header user={user} handleLogout={handleLogout} />
-      </div>
+      {/* <SideNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} /> */}
+      <CardNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6" style={{ paddingTop: '7rem' }}>
         <div>
           <h1 className="text-4xl font-extrabold text-gray-900">Help & Support</h1>
           <p className="mt-2 text-gray-600">Learn how to make the most of Internify.</p>

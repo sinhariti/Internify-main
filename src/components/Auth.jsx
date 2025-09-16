@@ -136,6 +136,12 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleFormSubmit();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -172,6 +178,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Full Name"
                     value={authForm.name}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, name: e.target.value }))}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   />
                 </div>
@@ -181,6 +188,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Email Address"
                     value={authForm.email}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   />
                 </div>
@@ -190,6 +198,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Password"
                     value={authForm.password}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 pr-12"
                   />
                   <button
@@ -210,6 +219,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Enter OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   />
                 </div>
@@ -222,6 +232,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Email Address"
                     value={authForm.email}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   />
                 </div>
@@ -231,6 +242,7 @@ const Auth = ({ currentView, setCurrentView, onAuthSuccess, error, setError, loa
                     placeholder="Password"
                     value={authForm.password}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
+                    onKeyDown={handleKeyPress}
                     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 pr-12"
                   />
                   <button

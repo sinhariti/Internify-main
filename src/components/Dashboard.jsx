@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart3, Settings } from 'lucide-react';
-import Header from './Header';
+import CardNav from './CardNav';
 import StatsCards from './StatsCards';
 import ApplicationsList from './ApplicationsList';
 import Modals from './Modals';
@@ -49,14 +49,20 @@ const Dashboard = ({
     <div className="min-h-screen bg-gray-50 relative">
       {(loading || notesLoading) && <Loader />}
       
-  <SideNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} />
+      {/* <SideNav user={user} handleLogout={handleLogout} handleNavigation={handleNavigation} /> */}
 
-      <Header user={user} handleLogout={handleLogout} />
+      <CardNav 
+        user={user} 
+        handleLogout={handleLogout} 
+        handleNavigation={handleNavigation} 
+      />
       
       {currentView === 'profile' ? (
-        <ProfilePage user={user} handleNavigation={handleNavigation} />
+        <div style={{ paddingTop: '7rem' }}>
+          <ProfilePage user={user} handleNavigation={handleNavigation} />
+        </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ml-0 sm:ml-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ml-0 sm:ml-0" style={{ paddingTop: '7rem' }}>
           <StatsCards applications={applications} />
           <ApplicationsList
             searchTerm={searchTerm}
