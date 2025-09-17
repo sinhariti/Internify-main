@@ -1,5 +1,6 @@
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
+const VITE_PYTHON = import.meta.env.VITE_PYTHON || 'http://localhost:8000';
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem('internify-user'));
   const token = user?.token;
@@ -105,4 +106,69 @@ export const api = {
     headers: getAuthHeaders(),
     body: JSON.stringify(profileData),
   }),
+};
+
+
+export const processResume = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  console.log(formData);
+  
+  
+  const response = await fetch(`${VITE_PYTHON}/process_resume`, {
+    method: 'POST',
+    body: formData,
+  });
+  console.log(response);
+  return response.json();
+};
+
+export const analyzeResume = async (resumeText, jobDescription, temperature = 0.5, maxTokens = 1024) => {
+  const response = await fetch(`${VITE_PYTHON}/analyze_resume`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      resume_text: resumeText,
+      job_description: jobDescription,
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+  
+  return response.json();
+};
+
+export const generateCoverLetter = async (resumeText, jobDescription, temperature = 0.5, maxTokens = 1024) => {
+  const response = await fetch(`${VITE_PYTHON}/generate_cover_letter`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      resume_text: resumeText,
+      job_description: jobDescription,
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+  
+  return response.json();
+};
+
+export const rephraseText = async (text, temperature = 0.5, maxTokens = 1024) => {
+  const response = await fetch(`${VITE_PYTHON}/rephrase_text`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text,
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+  
+  return response.json();
 };
