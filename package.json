@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build": "vite build",
-    "start": "vite preview --port $PORT"
+    "start": "serve -s dist",
+    "heroku-postbuild": "npm run build"
   },
   "engines": {
   "node": "23.x"
