@@ -1,6 +1,6 @@
 
 # Development Dockerfile for Vite + React
-FROM node:20-bullseye
+FROM node:23-bullseye
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
